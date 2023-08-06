@@ -84,7 +84,7 @@ def proc():
 #image = None
 root = Tk()
 root.title("Ventana principal")
-root.state('zoomed')
+#root.state('zoomed')
 btn = Button(root, text="Elegir imagen", width=25, command=elegir_imagen)
 btn.grid(column=0, row=0, padx=5, pady=5) 
 
