@@ -11,6 +11,8 @@ RUN apt-get update \
 && apt-get install -y x11-xserver-utils 
 
 RUN export DISPLAY=$DISPLAY
+RUN apt-get install nano
+RUN pip install mysql-connector-python
 #RUN xhost +
 
 
