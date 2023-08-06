@@ -1,6 +1,6 @@
 FROM debian:11-slim
 
-COPY . /tmp
+#COPY . /tmp
 
 RUN apt-get update \
 && apt-get -y upgrade \
@@ -11,11 +11,12 @@ RUN apt-get update \
 && apt-get install -y x11-xserver-utils 
 
 RUN export DISPLAY=$DISPLAY
-RUN xhost +
+#RUN xhost +
 
 
 RUN apt install -y python3-pip
 RUN python3 -m pip install --upgrade pip
+RUN apt-get install -y git
 
 #DEPENDENCIAS A UTILIZAR
 
