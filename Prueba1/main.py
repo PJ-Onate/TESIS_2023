@@ -5,9 +5,16 @@ import cv2
 from PIL import Image, ImageTk
 import imutils
 from proces import procesar_imagen
+import mysql.connector
+import numpy as np
 
 var_umbr = int(120)
 var_ruido= int(1)
+#mi_conexion=mysql.connector.connect(host = '146.83.198.35', user = 'ponate', passwd = 'pedro2023', db = 'pedroo_bd')
+#cur = mi_conexion.cursor()
+#cur.execute("SHOW TABLES")
+#for nombre in cur.fetchall():
+#    print(nombre)
 
 def mostrar_en_ventana():
     global image
@@ -17,9 +24,10 @@ def mostrar_en_ventana():
     image = cv2.imread(path_image)
     image = imutils.resize(image, width = 600, height = 250)
     image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    imagen = cv2.GaussianBlur(image, (5, 5), 0)
     ret, thresh = cv2.threshold(image, var_umbr, 255, 0)
     thresh = cv2.medianBlur(thresh, var_ruido)
-    image = Image.fromarray(thresh)
+    image = Image.fromarray(imagen)
 
     img = ImageTk.PhotoImage(image)
 
@@ -47,11 +55,34 @@ def elegir_imagen():
         ("image", ".jpeg"),
         ("image", ".png"),
         ("image", ".jpg")])
-    image = cv2.imread(path_image)
-    image = imutils.resize(image, width = 600, height = 250)
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    imagen_color = cv2.imread(path_image)   
+    image = cv2.cvtColor(imagen_color, cv2.COLOR_BGR2GRAY)
+    imagen = cv2.GaussianBlur(image, (5, 5), 0)
+    dst = cv2.cornerHarris(imagen,64,31,0.21)
+    dst = cv2.dilate(dst,None)
+    
+    #image = imutils.resize(dst, width = 600, height = 250)
+ 
+   
+    ret, dst = cv2.threshold(dst,0.01*dst.max(),255,0)
+    dst = np.uint8(dst)
+    
+    ret, labels, stats, centroids = cv2.connectedComponentsWithStats(dst)
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 0.1)
+    corners = cv2.cornerSubPix(imagen,np.float32(centroids),(5,5),(-1,-1),criteria)
+    #print(corners)
+    for corner in corners:
+        
+        x,y = corner.ravel()
+        x = int(x)
+        y = int(y)
+        print(x,y)
+        cv2.circle(imagen_color, (x,y), 15, 255, -1)
+
+    image = imutils.resize(imagen_color, width = 600, height = 250)
+    #canny = cv2.Canny(imagen, 30, 150)
     ret, thresh = cv2.threshold(image, 120, 255, 0)
-    img = Image.fromarray(thresh)
+    img = Image.fromarray(image)
     img = ImageTk.PhotoImage(img)
 
     label = ttk.Label(root, image = img)
