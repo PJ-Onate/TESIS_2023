@@ -58,7 +58,7 @@ def asignar_orden_a_puntos(puntos_encontrados, primer_punto, lista_ordenada, mod
 
         if (c+1)==len(lista_del_punto_mas_cercano_al_menos):
             primer_punto = lista_ordenada[len(lista_ordenada)-sumatoria]
-            modo_de_busqueda = 'hacia abajo' 
+            modo_de_busqueda = 'hacia abajo'
             sumatoria = 1         
     return lista_ordenada
 

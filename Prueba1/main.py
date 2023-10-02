@@ -4,10 +4,11 @@ from tkinter import ttk
 import cv2
 from PIL import Image, ImageTk
 import imutils
-from proces import procesar_imagen
+import asignacion as asi
 import mysql.connector
 import numpy as np
 
+tupla_esquinas = []
 var_umbr = int(120)
 var_ruido= int(1)
 #mi_conexion=mysql.connector.connect(host = '146.83.198.35', user = 'ponate', passwd = 'pedro2023', db = 'pedroo_bd')
@@ -51,6 +52,8 @@ def elegir_imagen():
     global image
     global path_image
     global thresh
+    global tupla_esquinas
+    tupla_esquinas = []
     path_image = filedialog.askopenfilename(filetypes = [
         ("image", ".jpeg"),
         ("image", ".png"),
@@ -68,17 +71,18 @@ def elegir_imagen():
     dst = np.uint8(dst)
     
     ret, labels, stats, centroids = cv2.connectedComponentsWithStats(dst)
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 0.1)
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 20, 0.3)
     corners = cv2.cornerSubPix(imagen,np.float32(centroids),(5,5),(-1,-1),criteria)
     #print(corners)
-    for corner in corners:
-        
+    for corner in corners:     
         x,y = corner.ravel()
         x = int(x)
         y = int(y)
-        print(x,y)
+        #print(x,y)
         cv2.circle(imagen_color, (x,y), 15, 255, -1)
+        tupla_esquinas.append((x,y))
 
+    #print(tupla_esquinas)
     image = imutils.resize(imagen_color, width = 600, height = 250)
     #canny = cv2.Canny(imagen, 30, 150)
     ret, thresh = cv2.threshold(image, 120, 255, 0)
@@ -101,16 +105,29 @@ def elegir_imagen():
 def proc():
     global thresh
     global path_image
+    global tupla_esquinas
     label_imagen_procesada = ttk.Label(root)
     imagen_normal = cv2.imread(path_image)
+    primera_esquina = asi.esquina_sup_izq(tupla_esquinas)
+    lista_ordenada = []
+    list = []
+    list.append(primera_esquina)
+    lista_ordenada = asi.asignar_orden_a_puntos(tupla_esquinas, primera_esquina, list, 'hacia el lado')
+    print(lista_ordenada)
+    print(primera_esquina)
+    #cv2.circle(imagen_normal, primera_esquina, 15, 150, -1)
+    for corner in lista_ordenada:     
+        cv2.circle(imagen_normal, corner, 15, 150, -1)
+
     imagen_normal = imutils.resize(imagen_normal, width = 600, height = 250)
 
-    im = procesar_imagen(thresh, imagen_normal)
-    imagen_normal = Image.fromarray(im)
+    #im = procesar_imagen(thresh, imagen_normal)
+    imagen_normal = Image.fromarray(imagen_normal)
     imagen_normal = ImageTk.PhotoImage(imagen_normal)
     label_imagen_procesada.configure(image=imagen_normal)
     label_imagen_procesada.image = imagen_normal
     label_imagen_procesada.grid(column=2, row=0)
+
 
 #image = None
 root = Tk()
